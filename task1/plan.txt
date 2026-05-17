@@ -1,0 +1,25 @@
+google_sql_database
+
+name = "acme_corp"
+instance = "shared-postgres"
+
+Action: create
+Resource ID: will be assigned
+Status: new resourc
+
+
+google_sql_user
+
+name = "acme_corp"
+instance = "shared-postgres"
+password = (sensitive value)
+
+Action: create
+Status: new resource
+
+
+
+Plan Summary
+Plan: 2 to add, 0 to change, 0 to destroy
++ google_sql_database.tenant_db
++ google_sql_user.tenant_user

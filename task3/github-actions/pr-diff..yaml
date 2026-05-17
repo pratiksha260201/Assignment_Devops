@@ -1,0 +1,45 @@
+name: PR Diff Workflow
+
+on:
+  pull_request:
+
+jobs:
+  kustomize-diff:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout PR Branch
+      uses: actions/checkout@v4
+
+    - name: Install Kustomize
+      run: |
+        curl -s https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
+        sudo mv kustomize /usr/local/bin/
+
+    - name: Build PR Output
+      run: |
+        kustomize build task3/ > pr-output.yaml
+
+    - name: Checkout Main Branch
+      run: |
+        git fetch origin main
+        git checkout origin/main
+
+    - name: Build Main Output
+      run: |
+        kustomize build task3/ > main-output.yaml
+
+    - name: Show Diff
+      run: |
+        diff main-output.yaml pr-output.yaml || true
+
+    - name: Comment PR
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: 'Kustomize diff completed successfully.'
+          })

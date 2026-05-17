@@ -1,0 +1,33 @@
+name: Tenant Onboarding
+
+on:
+  push:
+    paths:
+      - 'task1/tenants.yaml'
+
+jobs:
+  onboard-tenant:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Init
+      run: terraform init
+      working-directory: task1/terraform
+
+    - name: Terraform Plan
+      run: terraform plan
+      working-directory: task1/terraform
+
+    - name: Create Namespace
+      run: echo "Creating Kubernetes resources"
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v6
+      with:
+        title: "Tenant onboarding changes"

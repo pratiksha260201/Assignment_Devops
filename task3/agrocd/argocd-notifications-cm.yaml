@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+
+data:
+  trigger.on-health-degraded: |
+    - description: Application became Degraded
+      send:
+        - app-health-alert
+      when: app.status.health.status == 'Degraded'
+
+  trigger.on-outofsync: |
+    - description: Application became OutOfSync
+      send:
+        - app-health-alert
+      when: app.status.sync.status == 'OutOfSync'
+
+  template.app-health-alert: |
+    message: |
+      Application: {{.app.metadata.name}}
+      Environment: production
+      Status: {{.app.status.health.status}}
+
+      ArgoCD URL:
+      https://argocd.example.com/applications/{{.app.metadata.name}}

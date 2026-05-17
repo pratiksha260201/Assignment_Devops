@@ -1,0 +1,43 @@
+google_secret_manager_secret
+
+secret_id = "tenant-acme-corp-credentials"
+replication = auto
+Action: create
+
+
+google_secret_manager_secret_version
+
+secret = "tenant-acme-corp-credentials"
+secret_data =
+{
+  "username": "acme_corp",
+  "password": "Test@123"
+}
+Action: create
+
+
+google_service_account
+
+account_id = "acme-corp-gsa"
+display_name = "Tenant GSA"
+email =
+acme-corp-gsa@demo-project.iam.gserviceaccount.com
+Action: create
+
+google_secret_manager_secret_iam_member
+
+role = "roles/secretmanager.secretAccessor"
+member =serviceAccount:acme-corp-gsa@demo-project.iam.gserviceaccount.com
+secret =tenant-acme-corp-credentials
+Action: create
+
+lan Summary
+Plan: 4 to add, 0 to change, 0 to destroy
++ google_secret_manager_secret.tenant_secret
+Creates: secret with ID "tenant-{tenant_name}-credentials"
++ google_secret_manager_secret_version.tenant_secret_version
+Stores: JSON with username and password
++ google_service_account.tenant_gsa
+Creates: service account "{tenant_name}-gsa"
++ google_secret_manager_secret_iam_member.tenant_secret_access
+Grants: secretAccessor role to service account

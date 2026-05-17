@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+
+metadata:
+  name: tenant-egress-policy
+  namespace: acme-corp
+
+spec:
+  podSelector: {}
+
+  policyTypes:
+  - Egress
+
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+
+    ports:
+    - protocol: UDP
+      port: 53
+
+  - to:
+    - ipBlock:
+        cidr: 10.20.30.40/32
+
+    ports:
+    - protocol: TCP
+      port: 5432
