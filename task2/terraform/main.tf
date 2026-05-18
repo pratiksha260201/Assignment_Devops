@@ -32,4 +32,3 @@ resource "google_secret_manager_secret_iam_member" "tenant_secret_access" {
   member = "serviceAccount:${google_service_account.tenant_gsa.email}"
 }
 
-what is terraform plan ouput 
