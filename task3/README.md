@@ -1,42 +1,72 @@
+# PR Diff Check Flow
 
+## Accidental File Deletion
 
-Developer Alice accidentally deletes admin-dashboard-service.yaml
+```text
+Developer deletes a service file
 
 rm kubernetes/services/admin-dashboard-service.yaml
+```
 
-crteate PR 
+---
+
+# Create PR
+
+```text
 git add .
 git commit -m "Remove unused service"
 git push
+```
 
-developer accidentally deleted a service file"
+Developer creates a Pull Request.
 
+---
 
+# GitHub Actions Runs Automatically
 
-GitHub Actions runs automatically
-  
-Workflow builds manifests from main:
-  admin-dashboard-service exists
+```text
+Workflow checks files from main branch
+```
 
-Workflow builds manifests from PR:
-  admin-dashboard-service MISSING
+Main branch:
 
-Comparison:
-  REMOVED: Service admin-dashboard-service
+```text
+admin-dashboard-service exists
+```
 
+PR branch:
 
-  PR Comment (shows automatically):
+```text
+admin-dashboard-service missing
+```
 
+---
 
-how the Diff on PR
+# Diff Comparison
 
- REMOVED:
-  Service: admin-dashboard-service
-  Kind: Service
-  
+```text
+REMOVED:
+Service: admin-dashboard-service
+Kind: Service
+```
 
-This looks like a critical service!
+---
 
-Change removed from PR
-Code merged safely
-Deployed to production
+# Automatic PR Comment
+
+```text
+This looks like a critical service.
+Please review before merging.
+```
+
+---
+
+# Result
+
+```text
+Developer notices mistake
+Service file restored
+PR updated safely
+Code merged
+Deployment successful
+```
