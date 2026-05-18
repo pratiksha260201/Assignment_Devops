@@ -1,0 +1,28 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: acme-corp
+  name: tenant-secret-reader
+
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  resourceNames: ["tenant-acme-corp-secret"]
+  verbs: ["get"]
+
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tenant-secret-reader-binding
+  namespace: acme-corp
+
+subjects:
+- kind: ServiceAccount
+  name: acme-corp-sa
+  namespace: acme-corp
+
+roleRef:
+  kind: Role
+  name: tenant-secret-reader
+  apiGroup: rbac.authorization.k8s.io
