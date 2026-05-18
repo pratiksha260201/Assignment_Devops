@@ -1,49 +1,84 @@
+# Tenant Provisioning Flow
+
+## How It Works
+
+```text
 New customer signs up
-    ↓
-Add their name to tenants.yaml file
-    ↓
-GitHub Actions workflow runs automatically
-    ↓
-Everything created in seconds
+        ↓
+Add customer name to tenants.yaml
+        ↓
+GitHub Actions workflow runs
+        ↓
+Resources are created automatically
+```
 
+## tenants.yaml
 
+```yaml
 tenants:
-   acme       # Existing customer
-   shopify    # New customer added here
+  - acme
+  - shopify
+```
 
-Terraform creates:
-   Database: shopify_db
-   User: shopify_user
-   Password: (random secure)
+## Terraform Creates
 
-Kubernetes creates:
-   Namespace: shopify
-   ServiceAccount: shopify-sa
-   Role: shopify-role
-   RoleBinding: connects SA to Role
+```text
+Database:      shopify_db
+User:          shopify_user
+Password:      Random secure password
+```
 
+## Kubernetes Creates
 
-Run 1: Create database for acme
-  
+```text
+Namespace:        shopify
+ServiceAccount:   shopify-sa
+Role:             shopify-role
+RoleBinding:      shopify-rolebinding
+```
 
-Run 2: Run workflow again for acme , nothing changes 
-    
-Run 3: Run workflow again for acme, Still already exists, nothing changes
+## Idempotency
 
-No duplicates! No problems! ✓
+```text
+Run 1:
+Resources created for acme
 
-before 1 tenant 
+Run 2:
+Workflow runs again
+No changes
+
+Run 3:
+Workflow runs again
+Resources already exist
+
+Result:
+No duplicate resources
+```
+
+## Scaling
+
+### Before
+
+```yaml
 tenants:
-  -acme
+  - acme
+```
 
-after 50 tenant 
-  -acme
-  -shopify
-  -stripe
-  -google
-  -apple
+### After
 
+```yaml
+tenants:
+  - acme
+  - shopify
+  - stripe
+  - google
+  - apple
+```
 
-1 tenant? Loop runs 1 time
-50 tenants? Loop runs 50 times
-1000 tenants? Loop runs 1000 times
+## Loop Example
+
+```text
+1 tenant     → Loop runs 1 time
+50 tenants   → Loop runs 50 times
+1000 tenants → Loop runs 1000 times
+```
