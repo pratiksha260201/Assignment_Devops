@@ -1,28 +1,103 @@
-Each customer has their OWN password vault
+# Secret Isolation Between Tenants
 
+## Separate Secrets for Each Customer
+
+```text
 Netflix              Stripe               Google
-┌──────────────┐  ┌──────────────┐   ┌──────────────┐
-│ Netflix pwd  │  │ Stripe pwd   │   │ Google pwd   │
-└──────────────┘  └──────────────┘   └──────────────┘
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│ Netflix pwd  │    │ Stripe pwd   │    │ Google pwd   │
+└──────────────┘    └──────────────┘    └──────────────┘
+```
 
 If Netflix gets hacked:
-   Netflix password leaked
-   Stripe password safe
-   Google password safe
 
-Only 1 customer affected, others protected!
+```text
+Netflix password leaked
+Stripe password safe
+Google password safe
+```
 
-Netflix pod  →  "I am netflix-sa"  →  GCP verifies  →  access granted
-                                        ↓
-                                   stripe-sa?  →  rejected
+Only one customer is affected.
 
+---
 
+# Service Account Access
 
+```text
+Netflix pod
+      ↓
+"I am netflix-sa"
+      ↓
+GCP verifies identity
+      ↓
+Access granted
 
-When a pod is compromised, the attacker inherits whatever permissions that pod's service account holds. If the service account has a broad project-level role like Editor, the attacker can read every secret in the project — every tenant's passwords and API keys in one sweep. By binding the service account only to a single secret (e.g. jio-hotstar), the blast radius shrinks to just that one tenant. The attacker cannot request 'jio-hotstar' or 'google-secret` because GCP will reject the call outright — the identity simply has no permission to access them.
+Trying stripe-sa secret?
+      ↓
+Access denied
+```
 
+---
 
+# Why Single Secret Access Is Important
 
-NetworkPolicy controls which pods can open TCP connections to which other pods. It does nothing about the secret store. A Netflix pod blocked from reaching the Stripe database can still make an API call to GCP Secret Manager and pull the Stripe secret — if the IAM binding allows it. Network rules and IAM rules protect different things: one governs traffic between workloads inside the cluster, the other governs access to cloud resources outside it. Relying on only one means a gap in the other goes undefended. Both layers need to be in place so that even if an attacker finds a way around one, the other still holds.
+If a pod is hacked, the attacker gets the permissions of that pod’s service account.
 
+Bad example:
 
+```text
+One service account has access to all secrets
+```
+
+Result:
+
+```text
+Attacker can read passwords of all customers
+```
+
+Better approach:
+
+```text
+Each service account can access only its own secret
+```
+
+Result:
+
+```text
+Netflix pod → Only Netflix secret
+Stripe pod  → Only Stripe secret
+Google pod  → Only Google secret
+```
+
+This reduces the impact of an attack.
+
+---
+
+# Why NetworkPolicy Alone Is Not Enough
+
+NetworkPolicy controls pod-to-pod traffic inside Kubernetes.
+
+Example:
+
+```text
+Netflix pod cannot connect to Stripe database
+```
+
+But:
+
+```text
+It can still call GCP Secret Manager
+```
+
+If IAM permission exists, it can still read Stripe secrets.
+
+---
+
+# Final Security Layer
+
+```text
+NetworkPolicy → Controls network traffic
+IAM Rules     → Controls secret access
+```
+
+Both are needed for proper tenant isolation and security.
